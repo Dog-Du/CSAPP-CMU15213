@@ -1,0 +1,395 @@
+phase1 :
+1.字符串长度为52
+2.找到string_not_equal和string_length
+  查看寄存器%rax返回值，得知字符串长度，
+  根据string_not_equal两个参数寄存器 %rdi 和 %rsi
+  得知字符串所在内存地址
+  然后打印地址，把ASCII转化，得到答案 ：
+Border relations with Canada have never been better.
+
+phase2 :
+打断点，然后读汇编。
+read_six_numbers (input, a[]) :
+  char b[18]
+  rdx=a + 0
+  rcx=a + 4
+  rax=a + 20
+  b[8]=a + 20
+  rax=a + 16
+  b[0]=rax
+  r9=a + 12
+  r8=a + 8
+  esi=0x4025c3 -> "%d %d %d %d %d %d"
+
+  if sscanf(input,esi,a[0],a[4],a[8],a[12],a[16],a[20]) > 5 : -> 这部分没怎么看懂是怎么调用函数的。
+    return
+  explode_bomb()
+
+phase_2 (input) :
+  char a[28]  -> 可能是 int[7];
+  read_six_numbers (input, a)
+
+  if (a[0] == 1) : -> 第一个数字为 1
+    rbx=a + 4
+    rbp=a + 24
+  else :
+    explode_bomb()
+
+  eax=(%rbx-4) -> rbx的前一个数字
+  eax+=eax
+
+  if eax!=(rbx) :
+    explode_bomb()
+
+  rbx+=4
+
+  if rbp!=rbx :  -> 相当于循环检测后一个数是否是前一个数的二倍。
+    goto 37
+
+  return
+
+答案：
+1 2 4 8 16 32
+
+
+phase_3:
+  phase_3 (input : rdi) :
+    char a[24]
+    rcx=a+12
+    rdx=a+8
+    esi=0x4025cf -> "%d %d"
+    eax=0
+
+    if sscanf(input : rdi,"%d %d" : rsi/esi, a+8 : rdx, a+12 : rcx) > 1 :
+      if 7 < a[8] :
+        explode_bomb()
+    else :
+      explode_bomb()
+
+    eax=a[8]
+    goto *(8*rax/eax) -> 间接跳转。可以是好几种答案
+    eax=207
+    goto 89
+    eax=707
+    goto 89
+    eax=256
+    goto 89
+    eax=389
+    goto 89
+    eax=206
+    goto 89
+    eax=682
+    goto 89
+    eax=327
+    goto 89
+    explode_bomb()
+    eax=0
+    goto 89
+    eax=311
+    if a[12]==eax :
+      return
+    explode_bomb()
+
+答案：
+0 207
+
+phase_4 :
+  phase_4 (intput : rdi) :
+    char a[18]
+    rcd=a + 12
+    rdx=a + 8
+    esi=0x4025cf -> "%d %d"
+    eax=0
+
+    if sscanf(input : rdi, "%d %d" : esi/rsi, a+8:rdx,a+12:rcx) != 2 :
+      explode_bomb()
+
+    if 15 <= a[8] :
+      explode_bomb()
+
+    edx/rdx=15
+    esi/rsi=0
+    edi/rdi=a[8]
+
+    if func4(15 : rdx,0 : rsi, a[8] : rdi) != 0 :
+      explode_bomb()
+
+    if a[12] != 0 :
+      explode_bomb
+
+    return
+
+  func4(a : rdx, b : rsi, c : rdi) :
+    char d[8]
+    eax/rax=edx/rdx
+    eax/rax-=esi/rsi
+    ecx/rcx=eax/rax
+    ecx/rcx 逻辑右移 31 位
+    eax/rax+=ecx/rcx
+    eax/rax 算术右移 1 位
+    ecx/rcx=(rax+rsi)
+
+    if edi/rdi <= ecx/rcx :
+      goto 138
+    edx=(rcx-1)
+    func4()
+    eax/rax+=eax/rax
+    goto 144
+    eax=0
+    if edi/rdi >= ecx/rcx :
+      goto 144
+    esi/rsi=(rcx+1)
+    func4()
+    eax/rax=(rax+rax+1)
+    return
+
+分析func4 :
+  当 edi/rdi==ecx/rcx 时，会直接退出函数，并且返回 0
+  如果a，b是整数，a >= b，
+  那么ecx/rcx 就等于 (a-b)/2 + b
+  而a=15，b=0，所以 c 应该为 7
+  然后第二个数字是 0
+答案：
+  7 0
+
+phase_5 :
+  phase_5(input rdi) :
+    char a[32]
+    rbx=rdi
+
+    mov %fs:0x28, %rax
+    汇编中 mov    %fs:0x28,%rax 的作用：
+    栈保护功能，将一个特殊值（fs:0x28）存在栈的底部，
+    函数运行结束后再取出这个值和fs:0x28做比较，
+    如果有改变就说明栈被破坏，调用__stack_chk_fail@plt。
+    fs寄存器的值本身指向当前线程结构
+
+    a[24]=rax
+    eax/rax=0
+
+    if string_length(input : rdi) != 6 :
+      explode_bomb()
+
+    eax/rax=0
+    ecx/rcx=(rbx + rax + 1)
+    a[0]=cl
+    rdx=a[0]
+    edx/rdx &= 15
+    edx/rdx=0x4024b0+rdx
+    (a+rax+1+16)=dl
+    rax+=1
+
+    if rax != 6 :
+      goto 174
+
+    a[24]=0
+    esi/rsi=0x40245e
+    rdi=a+16
+
+    if strings_not_equal (rdi ,rsi : flyers) !=0 :
+      explode_bomb()
+
+    rax=a[24]
+    xor %fs:0x28,%rax -> 应该是栈保护
+    je return
+    __stack_chk_fail
+
+看代码，要求输入六个字符，然后把这六个字符的ASCII码取后4位(即 &15)，记作 数字x
+然后把 x 当做另一个字符串(0x4024b0)的下标，拼接成一个新的字符串(在栈内)
+要求这个字符串等于 0x40245e 的字符串
+
+
+9 15 14 5 6 7
+09 0F 0E 05 06 07
+找到有用的ASCII
+答案：
+  IONEFG
+
+phase_6 :
+  phase6 (input : rdi) :
+    char a[80]
+    e13=a+0
+    esi=a+0
+    read_six_numbers ()
+    r14=a+0
+    r12d/r12=0
+    rbp=r13
+    eax/rax=(r13)
+    eax/rax-=1
+
+    if 5 > eax :
+      explode_bomb
+    r12d/r12 += 1
+
+    if 6==r12d/r12 :
+      goto
+    ebx/rbx=r12d/r12
+    rax=ebx/rbx
+    eax/rax=(a+rax+4)
+
+    if eax == (rbp) :
+      explode_bomb
+    ebx/rbx=1
+
+    if 5<=ebx/rbx :
+      goto 227
+
+    r13+=4
+    goto 216
+    rax=r14
+    ecx/rcx=7
+    edx/rdx=ecx/rcx
+    edx/rdx=(rax)
+    rax+=4
+
+    if rsi != rax :
+      goto 241
+    esi/rsi=0
+    goto 259
+    rdx=(rdx+8)
+    eax/rax+=1
+    if eax/rax!=ecx/rcx :
+      goto 249
+    goto 249
+    edx/rdx=0x6032d0
+    (a+rsi+2+32)=edx/rdx
+    rsi+=4
+    if rsi==24 :
+      goto
+    ecx/rcx=(a+1+rsi)
+    if 1<=ecx/rcx :
+      goto 254
+    eax/rax=1
+    edx/rdx=0x6032d0
+    goto 249
+    rbx=a[32]
+    rax=a[40]
+    rsi=a[80]
+    rcx=rbx
+    rdx=(rax)
+    (rcx+8)=rdx
+    rax+=8
+    if rax!=rsi :
+      rcx=rdx
+      goto 269
+    (rdx+8)=0
+    rbp/rbp=5
+    rax=(rbx+8)
+    eax/rax=(rax)
+    (rbx)=eax/rax
+    if eax < (rbx) :
+      explode_bomb
+    rbx=(rbx+8)
+    rbp/ebp-=1
+    if ebp==0 :
+      goto 277
+    return
+
+int a[10];
+r13=a+0;
+rsi=a+0;
+read_six_numbers (input rdi, a rsi);
+r14=a+0
+r12=0
+rbp=a+0
+
+1 2 3 4 5 6
+
+查重，不允许重复。并且不能是 0
+所以肯定是 1-6 的全排列之一
+while true :
+  if *r13 - 1 > 5 :
+    explode_bomb
+  r12 += 1
+
+  if r12==6 :
+    break
+  ebx/rbx=r12
+
+  do
+    rax=ebx/rbx
+    eax/rax=*(a+4+rax)
+    if eax/rax==*rbp :
+      explode_bomb
+    ebx/rbx+=1
+  while 5<=ebx/rbx ;
+
+  r13+=4
+
+rsi=a[24]
+rax=r14
+ecx/rcx=7
+
+把数字变成 7-x, 然后在存回去
+do :
+  edx/rdx=ecx/rcx
+  edx/rdx-=*rax
+  *rax=edx/rdx
+  rax+=4
+  while rsi != rax
+
+esi=0
+goto 347
+
+do
+  rdx=(rdx+8)
+  eax/rax+=1
+while ecx/rcx != eax/rax
+
+goto 342
+
+edx=0x6032d0
+*(a+2*rsi+32)=rdx
+rsi+=4
+if 24==rsi :
+  goto 354
+
+ecx/rcx=*(a+rsi)
+if 1>=ecx/rcx :
+  goto 341
+eax/rax=1
+edx/rdx=0x6032d0
+goto 335
+
+rbx=a[32]
+rax=a[40]
+rsi=a[80]
+rcx=rbx
+
+do :
+  rdx=*rax
+  *(rax+8)=rdx
+  rax+=8
+
+  if rsi==rax :
+    break
+  rcx=rdx
+while(true)
+
+*(rdx+8)=0  检查是不是递增
+ebp/rbp=5
+rax=*(rbx+8)
+eax/rax=*(rax)
+if eax/rax < *rbx :
+  explode_bomb
+rbx=*(rbx+8)
+ebp/rbp-=1
+
+if ebp != 0 :
+  goto 371
+return
+
+分析：
+  1.首先是输入 6 个数字
+  2.然后检查这六个数字是否小于等于6，并且是否有重复
+  3.a[i]=7-i
+  4.置数，是指针，按照 a[i] 的顺序进行指针的放置，
+    放到 a[32] 以及之后，每个 8 字节
+    这些指针指向的是另一个数组
+  5.检查 a[32] 之后的指针指向的数字是否递减
+  6.拆解成功
+答案：
+4 3 2 1 6 5
+
+secret_phase :
+  没搞
