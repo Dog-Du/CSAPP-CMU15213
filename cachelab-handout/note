@@ -1,0 +1,10 @@
+// address = Tag | Index | Offset
+// Index  是分组
+// Offset 是在块内偏移量
+// Tag    是标记
+// 具体执行方法 ：
+// 1.用 Index 找到分组
+// 2.根据 Tag 找到具体的块
+// 3.根据 Offset 和 size 找到块内数据
+// 一个块的起始地址永远是 Tag | Index | 00000 终止地址则是 Tag | Index | 11111
+// 在这里比较是否 hit 只需要比较在组内比较 Tag 即可，而不是比较整个地址。
