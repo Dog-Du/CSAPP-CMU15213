@@ -1,23 +1,26 @@
 # Student's Makefile for the CS:APP Performance Lab
-TEAM = bovik
+TEAM = DogDu
 VERSION = 1
-HANDINDIR = 
+HANDINDIR =
 
 CC = gcc
-CFLAGS = -Wall -O2 -m32
+CFLAGS = -Wall -Og -m32 -g
 LIBS = -lm
 
-OBJS = driver.o kernels.o fcyc.o clock.o
+OBJS = kernels.o fcyc.o clock.o
 
-all: driver
+all: driver mytest
 
-driver: $(OBJS) fcyc.h clock.h defs.h config.h
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o driver
+driver: $(OBJS) fcyc.h clock.h defs.h config.h driver.c driver.o
+	$(CC) $(CFLAGS) $(OBJS) driver.o $(LIBS) -o driver
+
+mytest: mytest.c mytest.o
+	$(CC) $(CFLAGS) mytest.o $(LIBS) -o mytest
 
 handin:
 	cp kernels.c $(HANDINDIR)/$(TEAM)-$(VERSION)-kernels.c
 
-clean: 
-	-rm -f $(OBJS) driver core *~ *.o
+clean:
+	-rm -f $(OBJS) driver core *~ *.o mytest
 
 
