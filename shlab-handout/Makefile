@@ -8,17 +8,22 @@ TSH = ./tsh
 TSHREF = ./tshref
 TSHARGS = "-p"
 CC = gcc
-CFLAGS = -Wall -O2
-FILES = $(TSH) ./myspin ./mysplit ./mystop ./myint
+CFLAGS = -Wall -O2 -g
+FILES = $(TSH) ./myspin ./mysplit ./mystop ./myint ./mytest ./sub-process ./mytry
 
 all: $(FILES)
+
+mytest: mytest.c ../csapp.c
+	$(CC) $(CFLAGS) mytest.c ../csapp.c -o mytest
+
+mytry: mytry.c ../csapp.c
+	$(CC) $(CFLAGS) mytry.c ../csapp.c -o mytry
 
 ##################
 # Handin your work
 ##################
 handin:
 	cp tsh.c $(HANDINDIR)/$(TEAM)-$(VERSION)-tsh.c
-
 
 ##################
 # Regression tests
@@ -95,6 +100,6 @@ rtest16:
 
 # clean up
 clean:
-	rm -f $(FILES) *.o *~
+	rm -f $(FILES) *.o *~ mytest
 
 
