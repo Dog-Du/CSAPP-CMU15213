@@ -129,18 +129,6 @@ static void *seg_list[SEG_LIST_SIZE * 3];
 static void *mm_start_brk; /* points to first byte of heap */
 static void *mm_brk;       // 指向最后一个辅助块。
 
-/* 初始化一个空闲块。 */
-static void init_block(void *ptr, uint size, int front_free) {
-  SET_SIZE(ptr, size);
-  SET_SIZE(GET_FEET_PTR(ptr), size);
-  SET_FREEBIT(ptr, 1);
-  SET_FREEBIT(GET_FEET_PTR(ptr), 1);
-  SET_FRONT_FREEBIT(ptr, front_free);
-  SET_FRONT_FREEBIT(GET_BACK_PTR(ptr), front_free);
-
-  memset(ptr + HEAD_SIZE, 0, PTR_SIZE << 1);
-}
-
 /* 参数为需要的空闲块大小 */
 static void *extend_heap(size_t size) {
   void *ptr = mm_brk;

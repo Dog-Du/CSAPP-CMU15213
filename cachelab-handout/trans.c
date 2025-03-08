@@ -224,7 +224,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
         }
     } else {
         // 61 * 67 其中 61 和 67 为质数
-        // 8 -> 4 -> 2 -> 1
+        // 8 -> 4 -> 2 -> 1 结果还是直接用 块大小为 16 更好。
         for (i = 0; i < N; i += 16) {
             for (j = 0; j < M; j += 16) {
                 for (k = i; k < i + 16 && k < N; ++k) {

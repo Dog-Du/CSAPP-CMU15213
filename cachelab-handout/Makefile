@@ -5,7 +5,7 @@
 CC = gcc
 CFLAGS = -g -Wall -Werror -std=c99 -m64
 
-all: csim test-trans tracegen mytest-trans
+all: csim test-trans tracegen mytest-trans test
 	# Generate a handin tar file each time you compile
 	-tar -cvf ${USER}-handin.tar  csim.c trans.c
 
@@ -23,6 +23,9 @@ tracegen: tracegen.c trans.o cachelab.c
 
 trans.o: trans.c
 	$(CC) $(CFLAGS) -O0 -c trans.c
+
+test: test.c
+	$(CC) $(CFLAGS) -o test test.c
 
 #
 # Clean the src dirctory
