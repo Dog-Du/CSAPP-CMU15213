@@ -159,6 +159,24 @@ static void *extend_heap(size_t size) {
   return ptr;
 }
 
+static void shark_heap() {
+  if (!IS_FRONT_FREE(mm_brk)) {
+    return;
+  }
+
+  void *ptr = GET_FRONT_PTR(mm_brk);
+  REMOVE_FROM_LIST(ptr);
+
+  int shark = GET_SIZE(ptr) + HEAD_SIZE;
+  mm_brk -= shark;
+  mem_reset_brk();
+  mem_sbrk(mm_brk - mem_heap_lo() + HEAD_SIZE);
+
+  SET_SIZE(ptr, 0);
+  SET_FREEBIT(ptr, 0);
+  mm_brk = ptr;
+}
+
 static void insert_list(void *cur_ptr) {
   uint i;
   uint x;
@@ -193,8 +211,7 @@ int mm_init(void) {
   mm_brk = mem_heap_hi();
 
   uint brk = (uint)mm_start_brk;
-  uint need =
-      (ALIGNMENT - (brk % ALIGNMENT)) % ALIGNMENT + ALIGNMENT;
+  uint need = (ALIGNMENT - (brk % ALIGNMENT)) % ALIGNMENT + ALIGNMENT;
   uint have = mm_brk - mm_start_brk + 1;
 
   if (have < need) {
@@ -311,6 +328,7 @@ void mm_free(void *ptr) {
   SET_SIZE(GET_FEET_PTR(cur_ptr), GET_SIZE(cur_ptr));
 
   insert_list(cur_ptr);
+  //shark_heap();
 }
 
 /*
